@@ -1,50 +1,86 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+"use client"
 
-const API_URL = "http://localhost:3000"; // Cambiar a tu backend Vercel
+import { useEffect, useState } from "react"
+import axios from "axios"
+import "./home.css"
+
+const API_URL = "http://localhost:3000" // Cambiar a tu backend Vercel
 
 export default function Home() {
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState([])
 
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await axios.get(`${API_URL}/logs`);
-        setLogs(res.data);
+        const res = await axios.get(`${API_URL}/logs`)
+        setLogs(res.data)
       } catch (error) {
-        console.error("Error obteniendo logs:", error);
+        console.error("Error obteniendo logs:", error)
       }
-    };
+    }
 
-    fetchLogs();
-    const interval = setInterval(fetchLogs, 2000); // cada 2s
-    return () => clearInterval(interval);
-  }, []);
+    fetchLogs()
+    const interval = setInterval(fetchLogs, 2000) // cada 2s
+    return () => clearInterval(interval)
+  }, [])
 
   // Contador total y por página
-  const total = logs.length;
+  const total = logs.length
   const counts = logs.reduce((acc, log) => {
-    acc[log.path] = (acc[log.path] || 0) + 1;
-    return acc;
-  }, {});
+    acc[log.path] = (acc[log.path] || 0) + 1
+    return acc
+  }, {})
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">
-        Logs en vivo (Total: {total})
-      </h1>
-      <div className="mb-4">
-        {Object.entries(counts).map(([page, count]) => (
-          <div key={page}>{page}: {count} visitas</div>
-        ))}
+    <div className="logs-container">
+      <div className="header-section">
+        <h1 className="main-title">
+          <span className="title-icon">📊</span>
+          Logs en Tiempo Real
+          <span className="total-badge">{total}</span>
+        </h1>
+        <div className="status-indicator">
+          <div className="pulse-dot"></div>
+          <span>Conectado</span>
+        </div>
       </div>
-      <div className="bg-black text-green-400 p-4 rounded-lg font-mono h-[400px] overflow-y-auto">
-        {logs.map((log) => (
-          <div key={log.id}>
-            [{new Date(log.created_at).toLocaleTimeString()}] {log.path} - {log.ip}
+
+      <div className="stats-grid">
+        {Object.entries(counts).map(([page, count]) => (
+          <div key={page} className="stat-card">
+            <div className="stat-path">{page}</div>
+            <div className="stat-count">{count}</div>
+            <div className="stat-label">visitas</div>
           </div>
         ))}
       </div>
+
+      <div className="logs-terminal">
+        <div className="terminal-header">
+          <div className="terminal-controls">
+            <div className="control-dot red"></div>
+            <div className="control-dot yellow"></div>
+            <div className="control-dot green"></div>
+          </div>
+          <div className="terminal-title">Terminal de Logs</div>
+        </div>
+        <div className="terminal-content">
+          {logs.map((log, index) => (
+            <div key={log.id} className="log-entry" style={{ animationDelay: `${index * 0.05}s` }}>
+              <span className="log-timestamp">[{new Date(log.created_at).toLocaleTimeString()}]</span>
+              <span className="log-path">{log.path}</span>
+              <span className="log-separator">-</span>
+              <span className="log-ip">{log.ip}</span>
+            </div>
+          ))}
+          {logs.length === 0 && (
+            <div className="no-logs">
+              <div className="loading-spinner"></div>
+              <span>Esperando logs...</span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-  );
+  )
 }
