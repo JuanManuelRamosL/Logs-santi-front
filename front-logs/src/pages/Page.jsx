@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:3000"; // Cambiar a tu backend Vercel
+const API_URL = "https://logs-back.onrender.com"; // Cambiar a tu backend Vercel
 
 export default function Page({ path }) {
 useEffect(() => {

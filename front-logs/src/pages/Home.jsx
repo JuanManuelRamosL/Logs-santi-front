@@ -4,10 +4,37 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import "./home.css"
 
-const API_URL = "http://localhost:3000" // Cambiar a tu backend Vercel
+const API_URL = "https://logs-back.onrender.com" // Cambiar a tu backend Vercel
 
 export default function Home() {
   const [logs, setLogs] = useState([])
+ const [clearing, setClearing] = useState(false)
+  const [errorMsg, setErrorMsg] = useState(null)
+
+
+  const handleClearLogs = async () => {
+    const ok = window.confirm("¿Seguro que deseas eliminar todos los logs?")
+    if (!ok) return
+
+    try {
+      setClearing(true)
+      setErrorMsg(null)
+      await axios.post(
+        `${API_URL}/clear-logs`,
+        {},
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: false,
+        }
+      )
+      await fetchLogs()
+    } catch (error) {
+      console.error("Error eliminando logs:", error)
+      setErrorMsg("Ocurrió un error eliminando los logs.")
+    } finally {
+      setClearing(false)
+    }
+  }
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -23,6 +50,8 @@ export default function Home() {
     const interval = setInterval(fetchLogs, 2000) // cada 2s
     return () => clearInterval(interval)
   }, [])
+
+  
 
   // Contador total y por página
   const total = logs.length
@@ -43,6 +72,15 @@ export default function Home() {
           <div className="pulse-dot"></div>
           <span>Conectado</span>
         </div>
+        
+          <button
+            className={`danger-button ${clearing ? "is-loading" : ""}`}
+            onClick={handleClearLogs}
+            disabled={clearing}
+            aria-busy={clearing}
+          >
+            {clearing ? "Borrando..." : "Borrar logs"}
+          </button>
       </div>
 
       <div className="stats-grid">
